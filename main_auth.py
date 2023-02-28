@@ -9,12 +9,17 @@ from data.users import User
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
 
+# инициализируем LoginManager
 login_manager = LoginManager()
 login_manager.init_app(app)
 
 
+# Для верной работы flask-login
 @login_manager.user_loader
 def load_user(user_id):
+    '''
+    функция для получения пользователя
+    '''
     db_sess = db_session.create_session()
     return db_sess.query(User).get(user_id)
 
@@ -22,11 +27,14 @@ def load_user(user_id):
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     form = LoginForm()
-    if form.validate_on_submit():
+    if form.validate_on_submit():  # Если форма логина прошла валидацию
         db_sess = db_session.create_session()
+        # находим пользователя с введенной почтой
         user = db_sess.query(User).filter(User.email == form.email.data).first()
+        # проверяем, введен ли для него правильный пароль
         if user and user.check_password(form.password.data):
-            login_user(user, remember=form.remember_me.data)
+            # вызываем функцию login_user модуля flask-login и передаем туда объект пользователя
+            login_user(user, remember=form.remember_me.data)  # и значение галочки «Запомнить меня»
             return redirect("/")
         return render_template('login.html', message="Wrong login or password", form=form)
     return render_template('login.html', title='Authorization', form=form)
@@ -42,9 +50,9 @@ def index():
 
 
 @app.route('/logout')
-@login_required
+@login_required  # обработчики страниц, на которые может попасть только авторизованный пользователь
 def logout():
-    logout_user()
+    logout_user()  # «забываем» пользователя
     return redirect("/")
 
 

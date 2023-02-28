@@ -7,6 +7,9 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from .db_session import SqlAlchemyBase
 
 
+# модель для пользователей должна содержать
+# ряд методов для корректной работы flask-login
+# унаследуем User от UserMixin из модуля flask-login
 class User(SqlAlchemyBase, UserMixin):
     __tablename__ = 'users'
 
